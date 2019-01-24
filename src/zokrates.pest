@@ -1,0 +1,115 @@
+/** 
+* ZoKrates Grammar
+* Author: Jacob Eberhardt
+*/
+
+// TODO: 
+// exclude language keywords as identifiers
+// Ignore linebreak after \
+// Skip Whitespaces and Block Comments and Line Comments
+// associativit and precedence table for operators
+
+file = { SOI ~ import_directive* ~ program ~ EOI }
+
+import_directive = {"import" ~ ANY* ~ ("as" ~ identifier)?}
+
+program = {function_definition+}
+
+// Newline at end?
+function_definition = {"def" ~ identifier ~ "(" ~ parameter_list? ~ ")" ~ "->" ~ "(" ~ type_list? ~ ")" ~ ":" ~ statement_list }
+
+parameter_list = {parameter ~ ("," ~ parameter)*}
+type_list = { type_name ~ ("," ~ type_name)*}
+type_name = {"field" | "bool"}
+
+parameter = {"private"? ~ type_name ~ identifier}
+
+// Statements 
+
+statement_list = {statement ~ ("," ~ statement )*}
+statement = { iteration_statement
+            | return_statement
+            | multi_assignment_statement
+            | definition_statement
+            | assignment_statement
+            | expression_statement
+            }  
+
+iteration_statement = { "for" ~ type_name ~ identifier ~ "in" ~ constant ~ ".." ~ constant ~ "do" ~ statement_list ~ "endfor"}
+return_statement = { "return" ~ expression_list}
+multi_assignment_statement = { assignee_list ~ "=" ~ postfix_expression ~ "(" ~ expression_list? ~ ")"} // This is very specific with regards to parsing. However, I think more generality is not needed here.
+definition_statement = {type_name ~ identifier ~ "=" ~ expression}
+assignment_statement = {identifier ~ ("[" ~ (constant | identifier)? ~ "]")* ~ "=" ~ expression } // TODO: Is this optimal? Can the left side be written more elegantly?
+expression_statement = {expression}
+
+assignee_list = { type_name? ~ identifier ~ ("," ~ type_name? ~ identifier)*} // declarations or assignments
+
+// Expressions
+expression_list = {expression ~ ("," ~ expression)*}
+
+expression = { primary_expression | inclusive_or_expression }// includes all logical and arithmetic rules. Wrapper name?
+
+primary_expression = { identifier
+                    | constant
+                    | "(" ~ expression ~ ")"
+                    | "[" ~ expression_list ~ "]" //special case for array initialization
+                    }
+
+unary_expression = { "!"* ~ postfix_expression
+                    | "!"* ~ conditional_expression
+                    }
+
+conditional_expression = { "if" ~ expression ~ "then" ~ expression ~ "else" ~ expression ~ "fi"}
+
+relational_expression = { additive_expression ~ "<" ~ additive_expression
+                        | additive_expression ~ ">" ~ additive_expression
+                        | additive_expression ~ "<=" ~ additive_expression
+                        | additive_expression ~ ">=" ~ additive_expression
+                        }
+
+equality_expression = { relational_expression
+                        |   equality_expression ~ "==" ~ relational_expression
+                        |   equality_expression ~ "!=" ~ relational_expression
+                        }  
+
+and_expression = { equality_expression
+                    | and_expression ~ "&" ~ equality_expression
+                    }
+
+exclusive_or_expression = { and_expression
+                            | exclusive_or_expression ~ "^" ~ and_expression
+                            }
+
+inclusive_or_expression = { exclusive_or_expression
+                            | inclusive_or_expression ~ "|" ~ exclusive_or_expression
+                            }
+
+postfix_expression = { primary_expression
+                    | postfix_expression ~ "[" ~ expression ~ "]"
+                    | postfix_expression ~ "(" ~ expression_list? ~ ")"
+                    }
+
+additive_expression = { multiplicative_expression
+                        | additive_expression ~ "+" ~ multiplicative_expression
+                        | additive_expression ~ "-" ~ multiplicative_expression
+                        }
+
+multiplicative_expression = { power_expression
+                            | multiplicative_expression ~ "*" ~ power_expression
+                            | multiplicative_expression ~ "/" ~ power_expression
+                            }
+
+power_expression = { 
+                    | unary_expression ~ "**" ~ unary_expression
+                    }
+
+// End Expressions
+
+
+identifier = @{ASCII_ALPHA ~ (ASCII_ALPHANUMERIC | "_")*}
+constant = { "0" | ASCII_NONZERO_DIGIT ~ ASCII_DIGIT* }
+
+//NEWLINE
+
+WHITESPACE = _{ " " }
+COMMENT = _{ "/*" ~ (!"*/" ~ ANY)* ~ "*/" }
