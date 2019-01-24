@@ -47,64 +47,36 @@ assignee_list = { type_name? ~ identifier ~ ("," ~ type_name? ~ identifier)*} //
 // Expressions
 expression_list = {expression ~ ("," ~ expression)*}
 
-expression = { primary_expression | inclusive_or_expression }// includes all logical and arithmetic rules. Wrapper name?
+expression = {inclusive_or_expression }// includes all logical and arithmetic rules. Acts as wrapper at top of hierarchy.
+
+inclusive_or_expression = { exclusive_or_expression ~ ( "|" ~ exclusive_or_expression)* }
+
+exclusive_or_expression = { and_expression ~ ( "^" ~ and_expression)* }
+
+and_expression = { equality_expression ~ ( "&" ~ equality_expression)* }  
+
+equality_expression = { relational_expression ~ (("=="|"!=") ~ relational_expression)* }    
+
+relational_expression = { additive_expression ~ (("<"|">"|"<="|">=") ~ additive_expression)* }
+
+additive_expression = { multiplicative_expression ~ (("+"|"-") ~ multiplicative_expression)* }
+
+multiplicative_expression = { power_expression ~ (("*"|"/") ~ power_expression)* }
+
+power_expression = { unary_expression ~ ("**" ~ unary_expression)* } 
+
+unary_expression = { "!"* ~ (conditional_expression | postfix_expression) }  
+
+conditional_expression = { "if" ~ expression ~ "then" ~ expression ~ "else" ~ expression ~ "fi"}
+
+postfix_expression = { primary_expression ~ ("[" ~ expression ~ "]" | "(" ~ expression_list? ~ ")")* } 
 
 primary_expression = { identifier
                     | constant
                     | "(" ~ expression ~ ")"
                     | "[" ~ expression_list ~ "]" //special case for array initialization
                     }
-
-unary_expression = { "!"* ~ postfix_expression
-                    | "!"* ~ conditional_expression
-                    }
-
-conditional_expression = { "if" ~ expression ~ "then" ~ expression ~ "else" ~ expression ~ "fi"}
-
-relational_expression = { additive_expression ~ "<" ~ additive_expression
-                        | additive_expression ~ ">" ~ additive_expression
-                        | additive_expression ~ "<=" ~ additive_expression
-                        | additive_expression ~ ">=" ~ additive_expression
-                        }
-
-equality_expression = { relational_expression
-                        |   equality_expression ~ "==" ~ relational_expression
-                        |   equality_expression ~ "!=" ~ relational_expression
-                        }  
-
-and_expression = { equality_expression
-                    | and_expression ~ "&" ~ equality_expression
-                    }
-
-exclusive_or_expression = { and_expression
-                            | exclusive_or_expression ~ "^" ~ and_expression
-                            }
-
-inclusive_or_expression = { exclusive_or_expression
-                            | inclusive_or_expression ~ "|" ~ exclusive_or_expression
-                            }
-
-postfix_expression = { primary_expression
-                    | postfix_expression ~ "[" ~ expression ~ "]"
-                    | postfix_expression ~ "(" ~ expression_list? ~ ")"
-                    }
-
-additive_expression = { multiplicative_expression
-                        | additive_expression ~ "+" ~ multiplicative_expression
-                        | additive_expression ~ "-" ~ multiplicative_expression
-                        }
-
-multiplicative_expression = { power_expression
-                            | multiplicative_expression ~ "*" ~ power_expression
-                            | multiplicative_expression ~ "/" ~ power_expression
-                            }
-
-power_expression = { 
-                    | unary_expression ~ "**" ~ unary_expression
-                    }
-
 // End Expressions
-
 
 identifier = @{ASCII_ALPHA ~ (ASCII_ALPHANUMERIC | "_")*}
 constant = { "0" | ASCII_NONZERO_DIGIT ~ ASCII_DIGIT* }

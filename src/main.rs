@@ -12,14 +12,11 @@ use pest::Parser;
 pub struct ZoKratesParser;
 
 fn main() {
-
     let unparsed_file = fs::read_to_string("zoksample.code").expect("cannot read file");
 
-    let parse = ZoKratesParser::parse(Rule::file, &unparsed_file)
-            .expect("unsuccessful parse"); // unwrap the parse result
+    let parse = ZoKratesParser::parse(Rule::file, &unparsed_file).expect("unsuccessful parse"); // unwrap the parse result
     println!("{:?}", parse);
 }
-
 
 #[cfg(test)]
 mod tests {
@@ -31,7 +28,6 @@ mod tests {
         #[test]
         fn examples_dir() {
             // TODO: Traverse examples dir recursively and read all .code files
-            let mut dir = fs:: File::open(examples);
             let mut file = fs::File::open("examples/brackets.code").unwrap();
             let mut data = String::new();
 
