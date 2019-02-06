@@ -6,36 +6,30 @@
 // TODO: 
 // exclude language keywords as identifiers
 // Ignore linebreak after \
-// Skip Whitespaces and Block Comments and Line Comments
-// associativit and precedence table for operators
+// Doc: associativity and precedence table for operators
 
 file = { SOI ~ import_directive* ~ program ~ EOI }
-
-import_directive = {"import" ~ ANY* ~ ("as" ~ identifier)?}
-
+import_directive = {"import" ~ ANY* ~ ("as" ~ identifier)? ~ NEWLINE+}
 program = {function_definition+}
-
-// Newline at end?
-function_definition = {"def" ~ identifier ~ "(" ~ parameter_list? ~ ")" ~ "->" ~ "(" ~ type_list? ~ ")" ~ ":" ~ statement_list }
+function_definition = {"def" ~ identifier ~ "(" ~ parameter_list? ~ ")" ~ "->" ~ "(" ~ type_list? ~ ")" ~ ":" ~ NEWLINE* ~ statement+ }
 
 parameter_list = {parameter ~ ("," ~ parameter)*}
-type_list = { type_name ~ ("," ~ type_name)*}
-type_name = {"field" | "bool"}
-
 parameter = {"private"? ~ type_name ~ identifier}
+type_name = @{"field" ~ ("[" ~ WHITESPACE* ~ expression ~ WHITESPACE* ~ "]")* | "bool" ~ ("[" ~ WHITESPACE* ~ "]")* }
+
+type_list = { type_name ~ ("," ~ type_name)*}
 
 // Statements 
+statement = { (return_statement // does not require subsequent newline
+              | (iteration_statement
+                | multi_assignment_statement
+                | definition_statement
+                | assignment_statement
+                | expression_statement 
+                ) ~ NEWLINE
+            ) ~ NEWLINE*}
 
-statement_list = {statement ~ ("," ~ statement )*}
-statement = { iteration_statement
-            | return_statement
-            | multi_assignment_statement
-            | definition_statement
-            | assignment_statement
-            | expression_statement
-            }  
-
-iteration_statement = { "for" ~ type_name ~ identifier ~ "in" ~ constant ~ ".." ~ constant ~ "do" ~ statement_list ~ "endfor"}
+iteration_statement = { "for" ~ type_name ~ identifier ~ "in" ~ constant ~ ".." ~ constant ~ "do" ~ NEWLINE* ~ statement* ~ "endfor"}
 return_statement = { "return" ~ expression_list}
 multi_assignment_statement = { assignee_list ~ "=" ~ postfix_expression ~ "(" ~ expression_list? ~ ")"} // This is very specific with regards to parsing. However, I think more generality is not needed here.
 definition_statement = {type_name ~ identifier ~ "=" ~ expression}
@@ -46,31 +40,19 @@ assignee_list = { type_name? ~ identifier ~ ("," ~ type_name? ~ identifier)*} //
 
 // Expressions
 expression_list = {expression ~ ("," ~ expression)*}
-
 expression = {inclusive_or_expression }// includes all logical and arithmetic rules. Acts as wrapper at top of hierarchy.
 
 inclusive_or_expression = { exclusive_or_expression ~ ( "|" ~ exclusive_or_expression)* }
-
 exclusive_or_expression = { and_expression ~ ( "^" ~ and_expression)* }
-
 and_expression = { equality_expression ~ ( "&" ~ equality_expression)* }  
-
 equality_expression = { relational_expression ~ (("=="|"!=") ~ relational_expression)* }    
-
 relational_expression = { additive_expression ~ (("<"|">"|"<="|">=") ~ additive_expression)* }
-
 additive_expression = { multiplicative_expression ~ (("+"|"-") ~ multiplicative_expression)* }
-
 multiplicative_expression = { power_expression ~ (("*"|"/") ~ power_expression)* }
-
 power_expression = { unary_expression ~ ("**" ~ unary_expression)* } 
-
-unary_expression = { "!"* ~ (conditional_expression | postfix_expression) }  
-
+unary_expression = { "!"* ~ ( postfix_expression | conditional_expression ) }
 conditional_expression = { "if" ~ expression ~ "then" ~ expression ~ "else" ~ expression ~ "fi"}
-
 postfix_expression = { primary_expression ~ ("[" ~ expression ~ "]" | "(" ~ expression_list? ~ ")")* } 
-
 primary_expression = { identifier
                     | constant
                     | "(" ~ expression ~ ")"
@@ -79,9 +61,7 @@ primary_expression = { identifier
 // End Expressions
 
 identifier = @{ASCII_ALPHA ~ (ASCII_ALPHANUMERIC | "_")*}
-constant = { "0" | ASCII_NONZERO_DIGIT ~ ASCII_DIGIT* }
+constant = @{ "0" | ASCII_NONZERO_DIGIT ~ ASCII_DIGIT* }
 
-//NEWLINE
-
-WHITESPACE = _{ " " }
-COMMENT = _{ "/*" ~ (!"*/" ~ ANY)* ~ "*/" }
+WHITESPACE = _{ " " | "\t" | "\\" ~ NEWLINE}
+COMMENT = _{ ("/*" ~ (!"*/" ~ ANY)* ~ "*/") | ("//" ~ ( !NEWLINE ~ ANY)* ~ NEWLINE) }
