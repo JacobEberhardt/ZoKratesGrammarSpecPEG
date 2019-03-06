@@ -12,10 +12,17 @@ use pest::Parser;
 pub struct ZoKratesParser;
 
 fn main() {
-    let unparsed_file = fs::read_to_string("zoksample.code").expect("cannot read file");
+    // let unparsed_file = fs::read_to_string("zoksample.code").expect("cannot read file");
+    // let input_string = "for field i in 0..3 do \n c = c + a[i] \n endfor";
 
-    let parse = ZoKratesParser::parse(Rule::file, &unparsed_file).expect("unsuccessful parse"); // unwrap the parse result
-    println!("{:#?}", parse);
+    // let parse = ZoKratesParser::parse(Rule::iteration_statement, &input_string)
+    //     .expect("unsuccessful parse"); // unwrap the parse result
+    // println!("{:#?}", parse);
+
+    let input_string_2 = "for field i in 0..3 do \n c = c + a[i] \n endfor \n";
+    let parse2 =
+        ZoKratesParser::parse(Rule::statement, &input_string_2).expect("unsuccessful parse"); // unwrap the parse result
+    println!("{:#?}", parse2);
 }
 
 #[cfg(test)]
@@ -74,20 +81,30 @@ mod tests {
 
         #[test]
         fn parse_for_loop() {
-            parses_to! {
-                parser: ZoKratesParser,
-                input : "for field i in 0..3 do \n c = c + a[i] \n endfor",
-                rule: Rule::statement,
-                tokens: [
-                    iteration_statement(0, 42),
-                    type_name(4,9),
-                    identifier(10,11),
-                    constant(15,16),
-                    constant(18,19),
-                    statement(26,41),
+            let input = "for field i in 0..3 do \n c = c + a[i] \n endfor";
 
-                ]
-            };
+            let parse = ZoKratesParser::parse(Rule::iteration_statement, input);
+            assert!(parse.is_ok());
+
+            // parses_to! {
+            //     parser: ZoKratesParser,
+            //     input : "for field i in 0..3 do \n c = c + a[i] \n endfor",
+            //     rule: Rule::statement,
+            //     tokens: [
+            //         iteration_statement(0, 42,
+            //             [
+            //              type_name(4,9), identifier(10,11)
+            //              ],
+            //              [
+            //                  constant(15,16),
+            //              ],
+            //             [
+            //                 constant(18,19)
+            //                 ],
+            //         statement(26,41),
+            //             )
+            //         ]
+            // };
         }
 
     }

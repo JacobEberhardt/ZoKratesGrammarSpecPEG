@@ -26,8 +26,8 @@ statement = { (return_statement // does not require subsequent newline
                 | definition_statement
                 | assignment_statement
                 | expression_statement 
-                ) ~ NEWLINE
-            ) ~ NEWLINE*}
+                ) ~ NEWLINE 
+            ) ~ NEWLINE* }
 
 iteration_statement = { "for" ~ type_name ~ identifier ~ "in" ~ constant ~ ".." ~ constant ~ "do" ~ NEWLINE* ~ statement* ~ "endfor"}
 return_statement = { "return" ~ expression_list}
@@ -60,8 +60,17 @@ primary_expression = { identifier
                     }
 // End Expressions
 
-identifier = @{ASCII_ALPHA ~ (ASCII_ALPHANUMERIC | "_")*}
+// identifier = @{ !keyword ~ ASCII_ALPHA ~ (ASCII_ALPHANUMERIC | "_")*}
+identifier = @{ ASCII_ALPHA ~ (ASCII_ALPHANUMERIC | "_")*}
 constant = @{ "0" | ASCII_NONZERO_DIGIT ~ ASCII_DIGIT* }
 
 WHITESPACE = _{ " " | "\t" | "\\" ~ NEWLINE}
 COMMENT = _{ ("/*" ~ (!"*/" ~ ANY)* ~ "*/") | ("//" ~ ( !NEWLINE ~ ANY)* ~ NEWLINE) }
+
+// TODO: Order by alphabet
+// keyword = @{"for" | "as" | "in" | "return" | "byte" | "field" |
+//             "const" | "if" | "do" | "else" | "export" | "false" |
+//             "def" | "for" | "import" | "uint" |
+//             "in" | "public" | "private" | "return" |
+//             "struct" | "true"
+//             }
