@@ -1,5 +1,5 @@
 [package]
-name = "zokrates-pest"
+name = "zokrates_pest"
 version = "0.1.0"
 authors = ["JacobEberhardt <jacob.eberhardt@tu-berlin.de>"]
 edition = "2018"
