@@ -2,28 +2,17 @@ extern crate pest;
 #[macro_use]
 extern crate pest_derive;
 
-use std::fs;
-
+use pest::error::Error;
+use pest::iterators::Pairs;
 use pest::Parser;
+use std::fs;
 
 #[derive(Parser)]
 #[grammar = "zokrates.pest"]
-pub struct ZoKratesParser;
+struct ZoKratesParser;
 
-fn main() {
-    let input_string_2 = r#"def constant() -> (field):
-  return 123123
-
-def add(field a,field b) -> (field):
-  a=constant()
-  return a+b
-
-def main(field a,field b) -> (field):
-  field c = add(a, b+constant())
-  return const()
-"#;
-    let parse2 = ZoKratesParser::parse(Rule::file, &input_string_2).map_err(|e| println!("{}", e)); // unwrap the parse result
-    println!("{:#?}", parse2);
+pub fn parse(input: &str) -> Result<Pairs<Rule>, Error<Rule>> {
+    ZoKratesParser::parse(Rule::file, input)
 }
 
 #[cfg(test)]
@@ -99,26 +88,6 @@ mod tests {
 
             let parse = ZoKratesParser::parse(Rule::iteration_statement, input);
             assert!(parse.is_ok());
-
-            // parses_to! {
-            //     parser: ZoKratesParser,
-            //     input : "for field i in 0..3 do \n c = c + a[i] \n endfor",
-            //     rule: Rule::statement,
-            //     tokens: [
-            //         iteration_statement(0, 42,
-            //             [
-            //              type_name(4,9), identifier(10,11)
-            //              ],
-            //              [
-            //                  constant(15,16),
-            //              ],
-            //             [
-            //                 constant(18,19)
-            //                 ],
-            //         statement(26,41),
-            //             )
-            //         ]
-            // };
         }
 
     }
