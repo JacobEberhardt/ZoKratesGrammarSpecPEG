@@ -4,12 +4,12 @@
 */
 
 // TODO: 
-// exclude language keywords as identifiers
+// exclude language keywords as identifiers: DONE
 // Ignore linebreak after \
 // Doc: associativity and precedence table for operators
 
-file = { SOI ~ import_directive* ~ program ~ EOI }
-import_directive = {"import" ~ ANY* ~ ("as" ~ identifier)? ~ NEWLINE+}
+file = { SOI ~ NEWLINE* ~ import_directive* ~ NEWLINE* ~ program ~ EOI }
+import_directive = {"import" ~ "\"" ~ (!"\"" ~ ANY)* ~ "\"" ~ ("as" ~ identifier)? ~ NEWLINE+}
 program = {function_definition+}
 function_definition = {"def" ~ identifier ~ "(" ~ parameter_list? ~ ")" ~ "->" ~ "(" ~ type_list? ~ ")" ~ ":" ~ NEWLINE* ~ statement+ }
 
@@ -31,9 +31,9 @@ statement = { (return_statement // does not require subsequent newline
 
 iteration_statement = { "for" ~ type_name ~ identifier ~ "in" ~ constant ~ ".." ~ constant ~ "do" ~ NEWLINE* ~ statement* ~ "endfor"}
 return_statement = { "return" ~ expression_list}
-multi_assignment_statement = { assignee_list ~ "=" ~ postfix_expression ~ "(" ~ expression_list? ~ ")"} // This is very specific with regards to parsing. However, I think more generality is not needed here.
+multi_assignment_statement = { assignee_list ~ "=" ~ identifier ~ "(" ~ expression_list? ~ ")"} // This is very specific with regards to parsing. However, I think more generality is not needed here.
 definition_statement = {type_name ~ identifier ~ "=" ~ expression}
-assignment_statement = {identifier ~ ("[" ~ (constant | identifier)? ~ "]")* ~ "=" ~ expression } // TODO: Is this optimal? Can the left side be written more elegantly?
+assignment_statement = {identifier ~ ("[" ~ expression ~ "]")* ~ "=" ~ expression } // TODO: Is this optimal? Can the left side be written more elegantly?
 expression_statement = {expression}
 
 assignee_list = { type_name? ~ identifier ~ ("," ~ type_name? ~ identifier)*} // declarations or assignments
@@ -48,7 +48,7 @@ and_expression = { equality_expression ~ ( "&" ~ equality_expression)* }
 equality_expression = { relational_expression ~ (("=="|"!=") ~ relational_expression)* }    
 relational_expression = { additive_expression ~ (("<"|">"|"<="|">=") ~ additive_expression)* }
 additive_expression = { multiplicative_expression ~ (("+"|"-") ~ multiplicative_expression)* }
-multiplicative_expression = { power_expression ~ (("*"|"/") ~ power_expression)* }
+multiplicative_expression = { power_expression ~ (!("//") ~ ("*"|"/") ~ power_expression)* }
 power_expression = { unary_expression ~ ("**" ~ unary_expression)* } 
 unary_expression = { "!"* ~ ( postfix_expression | conditional_expression ) }
 conditional_expression = { "if" ~ expression ~ "then" ~ expression ~ "else" ~ expression ~ "fi"}
@@ -60,17 +60,16 @@ primary_expression = { identifier
                     }
 // End Expressions
 
-// identifier = @{ !keyword ~ ASCII_ALPHA ~ (ASCII_ALPHANUMERIC | "_")*}
-identifier = @{ ASCII_ALPHA ~ (ASCII_ALPHANUMERIC | "_")*}
+identifier = @{ ((!keyword ~ ASCII_ALPHA) | (keyword ~ (ASCII_ALPHANUMERIC | "_"))) ~ (ASCII_ALPHANUMERIC | "_")* }
 constant = @{ "0" | ASCII_NONZERO_DIGIT ~ ASCII_DIGIT* }
 
 WHITESPACE = _{ " " | "\t" | "\\" ~ NEWLINE}
-COMMENT = _{ ("/*" ~ (!"*/" ~ ANY)* ~ "*/") | ("//" ~ ( !NEWLINE ~ ANY)* ~ NEWLINE) }
+COMMENT = _{ ("/*" ~ (!"*/" ~ ANY)* ~ "*/") | ("//" ~ (!NEWLINE ~ ANY)*) }
 
 // TODO: Order by alphabet
-// keyword = @{"for" | "as" | "in" | "return" | "byte" | "field" |
-//             "const" | "if" | "do" | "else" | "export" | "false" |
-//             "def" | "for" | "import" | "uint" |
-//             "in" | "public" | "private" | "return" |
-//             "struct" | "true"
-//             }
+keyword = @{"for" | "endfor" | "as" | "in" | "return" | "byte" | "field" |
+            "const" | "if" | "do" | "else" | "export" | "false" |
+            "def" | "for" | "import" | "uint" |
+            "in" | "public" | "private" | "return" |
+            "struct" | "true"
+            }

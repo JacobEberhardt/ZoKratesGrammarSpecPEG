@@ -3,7 +3,6 @@ extern crate pest;
 extern crate pest_derive;
 
 use std::fs;
-use std::io::Read;
 
 use pest::Parser;
 
@@ -12,16 +11,19 @@ use pest::Parser;
 pub struct ZoKratesParser;
 
 fn main() {
-    // let unparsed_file = fs::read_to_string("zoksample.code").expect("cannot read file");
-    // let input_string = "for field i in 0..3 do \n c = c + a[i] \n endfor";
+    let input_string_2 = r#"def constant() -> (field):
+  return 123123
 
-    // let parse = ZoKratesParser::parse(Rule::iteration_statement, &input_string)
-    //     .expect("unsuccessful parse"); // unwrap the parse result
-    // println!("{:#?}", parse);
+def add(field a,field b) -> (field):
+  a=constant()
+  return a+b
 
-    let input_string_2 = "for field i in 0..3 do \n c = c + a[i] \n endfor \n";
+def main(field a,field b) -> (field):
+  field c = add(a, b+constant())
+  return const()
+"#;
     let parse2 =
-        ZoKratesParser::parse(Rule::statement, &input_string_2).expect("unsuccessful parse"); // unwrap the parse result
+        ZoKratesParser::parse(Rule::file, &input_string_2).map_err(|e| println!("{}", e)); // unwrap the parse result
     println!("{:#?}", parse2);
 }
 
@@ -34,6 +36,7 @@ mod tests {
         use super::*;
         extern crate glob;
         use glob::glob;
+        use std::io::Read;
 
         #[test]
         fn examples_dir() {
@@ -72,6 +75,18 @@ mod tests {
             fails_with! {
                 parser: ZoKratesParser,
                 input: "0_invalididentifier",
+                rule: Rule::identifier,
+                positives: vec![Rule::identifier],
+                negatives: vec![],
+                pos: 0
+            };
+        }
+
+        #[test]
+        fn parse_invalid_identifier_because_keyword() {
+            fails_with! {
+                parser: ZoKratesParser,
+                input: "endfor",
                 rule: Rule::identifier,
                 positives: vec![Rule::identifier],
                 negatives: vec![],
