@@ -22,8 +22,7 @@ def main(field a,field b) -> (field):
   field c = add(a, b+constant())
   return const()
 "#;
-    let parse2 =
-        ZoKratesParser::parse(Rule::file, &input_string_2).map_err(|e| println!("{}", e)); // unwrap the parse result
+    let parse2 = ZoKratesParser::parse(Rule::file, &input_string_2).map_err(|e| println!("{}", e)); // unwrap the parse result
     println!("{:#?}", parse2);
 }
 
