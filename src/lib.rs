@@ -9,10 +9,10 @@ use std::fs;
 
 #[derive(Parser)]
 #[grammar = "zokrates.pest"]
-struct ZokratesParser;
+struct ZoKratesParser;
 
 pub fn parse(input: &str) -> Result<Pairs<Rule>, Error<Rule>> {
-    ZokratesParser::parse(Rule::file, input)
+    ZoKratesParser::parse(Rule::file, input)
 }
 
 #[cfg(test)]
@@ -36,7 +36,7 @@ mod tests {
                         let mut file = fs::File::open(path).unwrap();
                         let mut data = String::new();
                         file.read_to_string(&mut data).unwrap();
-                        ZokratesParser::parse(Rule::file, &data).unwrap();
+                        ZoKratesParser::parse(Rule::file, &data).unwrap();
                     }
                     Err(e) => println!("{:?}", e),
                 }
@@ -49,7 +49,7 @@ mod tests {
         #[test]
         fn parse_valid_identifier() {
             parses_to! {
-                parser: ZokratesParser,
+                parser: ZoKratesParser,
                 input: "valididentifier_01",
                 rule: Rule::identifier,
                 tokens: [
@@ -61,7 +61,7 @@ mod tests {
         #[test]
         fn parse_invalid_identifier() {
             fails_with! {
-                parser: ZokratesParser,
+                parser: ZoKratesParser,
                 input: "0_invalididentifier",
                 rule: Rule::identifier,
                 positives: vec![Rule::identifier],
@@ -73,7 +73,7 @@ mod tests {
         #[test]
         fn parse_invalid_identifier_because_keyword() {
             fails_with! {
-                parser: ZokratesParser,
+                parser: ZoKratesParser,
                 input: "endfor",
                 rule: Rule::identifier,
                 positives: vec![Rule::identifier],
@@ -86,7 +86,7 @@ mod tests {
         fn parse_for_loop() {
             let input = "for field i in 0..3 do \n c = c + a[i] \n endfor";
 
-            let parse = ZokratesParser::parse(Rule::iteration_statement, input);
+            let parse = ZoKratesParser::parse(Rule::iteration_statement, input);
             assert!(parse.is_ok());
         }
 
