@@ -23,8 +23,8 @@ mod tests {
         use super::*;
         extern crate glob;
         use glob::glob;
-        use std::io::Read;
         use std::fs;
+        use std::io::Read;
 
         #[test]
         fn examples_dir() {
