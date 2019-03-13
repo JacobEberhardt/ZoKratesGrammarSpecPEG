@@ -21,13 +21,12 @@ mod tests {
 
     mod examples {
         use super::*;
-        extern crate glob;
-        use glob::glob;
-        use std::fs;
-        use std::io::Read;
 
         #[test]
         fn examples_dir() {
+            use glob::glob;
+            use std::fs;
+            use std::io::Read;
             // Traverse all .code files in examples dir
             for entry in glob("examples/**/*.code").expect("Failed to read glob pattern") {
                 match entry {
@@ -56,6 +55,12 @@ mod tests {
                     identifier(0, 18)
                 ]
             };
+        }
+
+        #[test]
+        fn parse_parameter_list() {
+            println!("{:#?}", ZoKratesParser::parse(Rule::function_definition, "def foo(field a) -> (field, field): reutrn 1
+                "));
         }
 
         #[test]
