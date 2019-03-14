@@ -59,8 +59,14 @@ mod tests {
 
         #[test]
         fn parse_parameter_list() {
-            println!("{:#?}", ZoKratesParser::parse(Rule::function_definition, "def foo(field a) -> (field, field): reutrn 1
-                "));
+            println!(
+                "{:#?}",
+                ZoKratesParser::parse(
+                    Rule::function_definition,
+                    "def foo(field a) -> (field, field): reutrn 1
+                "
+                )
+            );
         }
 
         #[test]
