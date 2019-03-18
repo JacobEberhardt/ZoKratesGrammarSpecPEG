@@ -5,7 +5,6 @@ extern crate pest_derive;
 use pest::error::Error;
 use pest::iterators::Pairs;
 use pest::Parser;
-use std::fs;
 
 #[derive(Parser)]
 #[grammar = "zokrates.pest"]
@@ -24,6 +23,7 @@ mod tests {
         use super::*;
         extern crate glob;
         use glob::glob;
+        use std::fs;
         use std::io::Read;
 
         #[test]

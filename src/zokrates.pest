@@ -8,16 +8,13 @@
 // Ignore linebreak after \
 // Doc: associativity and precedence table for operators
 
-file = { SOI ~ NEWLINE* ~ import_directive* ~ NEWLINE* ~ program ~ EOI }
+file = { SOI ~ NEWLINE* ~ import_directive* ~ NEWLINE* ~ function_definition* ~ EOI }
 import_directive = {"import" ~ "\"" ~ (!"\"" ~ ANY)* ~ "\"" ~ ("as" ~ identifier)? ~ NEWLINE+}
-program = {function_definition+}
-function_definition = {"def" ~ identifier ~ "(" ~ parameter_list? ~ ")" ~ "->" ~ "(" ~ type_list? ~ ")" ~ ":" ~ NEWLINE* ~ statement+ }
+function_definition = {"def" ~ identifier ~ "(" ~ parameter_list? ~ ")" ~ "->" ~ "(" ~ (type_name ~ ("," ~ type_name)*)? ~ ")" ~ ":" ~ NEWLINE* ~ statement* }
 
 parameter_list = {parameter ~ ("," ~ parameter)*}
 parameter = {"private"? ~ type_name ~ identifier}
 type_name = @{"field" ~ ("[" ~ WHITESPACE* ~ expression ~ WHITESPACE* ~ "]")* | "bool" ~ ("[" ~ WHITESPACE* ~ "]")* }
-
-type_list = { type_name ~ ("," ~ type_name)*}
 
 // Statements 
 statement = { (return_statement // does not require subsequent newline
@@ -40,19 +37,12 @@ assignee_list = { type_name? ~ identifier ~ ("," ~ type_name? ~ identifier)*} //
 
 // Expressions
 expression_list = {expression ~ ("," ~ expression)*}
-expression = {inclusive_or_expression }// includes all logical and arithmetic rules. Acts as wrapper at top of hierarchy.
 
-inclusive_or_expression = { exclusive_or_expression ~ ( "|" ~ exclusive_or_expression)* }
-exclusive_or_expression = { and_expression ~ ( "^" ~ and_expression)* }
-and_expression = { equality_expression ~ ( "&" ~ equality_expression)* }  
-equality_expression = { relational_expression ~ (("=="|"!=") ~ relational_expression)* }    
-relational_expression = { additive_expression ~ (("<"|">"|"<="|">=") ~ additive_expression)* }
-additive_expression = { multiplicative_expression ~ (("+"|"-") ~ multiplicative_expression)* }
-multiplicative_expression = { power_expression ~ (!("//") ~ ("*"|"/") ~ power_expression)* }
-power_expression = { unary_expression ~ ("**" ~ unary_expression)* } 
-unary_expression = { "!"* ~ ( postfix_expression | conditional_expression ) }
+expression = { term ~ (op_binary ~ term)* }
+term = { ("(" ~ expression ~ ")") | conditional_expression | postfix_expression | primary_expression}
+
 conditional_expression = { "if" ~ expression ~ "then" ~ expression ~ "else" ~ expression ~ "fi"}
-postfix_expression = { primary_expression ~ ("[" ~ expression ~ "]" | "(" ~ expression_list? ~ ")")* } 
+postfix_expression = { primary_expression ~ ("[" ~ expression ~ "]" | "(" ~ expression_list? ~ ")")+ }
 primary_expression = { identifier
                     | constant
                     | "(" ~ expression ~ ")"
@@ -62,6 +52,22 @@ primary_expression = { identifier
 
 identifier = @{ ((!keyword ~ ASCII_ALPHA) | (keyword ~ (ASCII_ALPHANUMERIC | "_"))) ~ (ASCII_ALPHANUMERIC | "_")* }
 constant = @{ "0" | ASCII_NONZERO_DIGIT ~ ASCII_DIGIT* }
+
+op_inclusive_or = {"|"}
+op_exclusive_or = {"^"}
+op_and = {"&"}
+op_equal = {"=="}
+op_not_equal = {"!="}
+op_lt = {"<"}
+op_lte = {"<="}
+op_gt = {">"}
+op_gte = {">="}
+op_add = {"+"}
+op_sub = {"-"}
+op_mul = {"*"}
+op_div = {"/"}
+op_pow = {"**"}
+op_binary = _ { op_pow | op_inclusive_or | op_exclusive_or | op_and | op_equal | op_not_equal | op_lt | op_lte | op_gt | op_gte | op_add | op_sub | op_mul | op_div }
 
 WHITESPACE = _{ " " | "\t" | "\\" ~ NEWLINE}
 COMMENT = _{ ("/*" ~ (!"*/" ~ ANY)* ~ "*/") | ("//" ~ (!NEWLINE ~ ANY)*) }
