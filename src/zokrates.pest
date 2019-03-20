@@ -41,13 +41,13 @@ statement = { (return_statement // does not require subsequent newline
 
 iteration_statement = { "for" ~ ty ~ identifier ~ "in" ~ expression ~ ".." ~ expression ~ "do" ~ NEWLINE* ~ statement* ~ "endfor"}
 return_statement = { "return" ~ expression_list}
-multi_assignment_statement = { optionally_declared_identifier_list ~ "=" ~ identifier ~ "(" ~ expression_list? ~ ")"} // This is very specific with regards to parsing. However, I think more generality is not needed here.
+multi_assignment_statement = { optionally_typed_identifier_list ~ "=" ~ identifier ~ "(" ~ expression_list? ~ ")"} // This is very specific with regards to parsing. However, I think more generality is not needed here.
 definition_statement = {ty ~ identifier ~ "=" ~ expression} // declare and assign, so only identifiers are allowed, unlike `assignment_statement`
 assignment_statement = {assignee ~ "=" ~ expression } // TODO: Is this optimal? Can the left side be written more elegantly?
 expression_statement = {expression}
 
-optionally_declared_identifier_list = _{ optionally_declared_identifier ~ ("," ~ optionally_declared_identifier)* } // declarations or assignments
-optionally_declared_identifier = { ty? ~ identifier }
+optionally_typed_identifier_list = _{ optionally_typed_identifier ~ ("," ~ optionally_typed_identifier)* } // declarations or assignments
+optionally_typed_identifier = { ty? ~ identifier }
 
 // Expressions
 expression_list = {(expression ~ ("," ~ expression)*)?}
