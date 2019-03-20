@@ -59,7 +59,7 @@ mod tests {
 
         #[test]
         fn parse_parameter_list() {
-            parses_to!{
+            parses_to! {
                 parser: ZoKratesParser,
                 input: "def foo(field a) -> (field, field): return 1
                 ",
