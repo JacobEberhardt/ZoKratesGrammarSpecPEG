@@ -94,7 +94,7 @@ WHITESPACE = _{ " " | "\t" | "\\" ~ NEWLINE}
 COMMENT = _{ ("/*" ~ (!"*/" ~ ANY)* ~ "*/") | ("//" ~ (!NEWLINE ~ ANY)*) }
 
 // TODO: Order by alphabet
-keyword = @{"for" | "endfor" | "as" | "in" | "return" | "byte" | "field" |
+keyword = @{"for" | "endfor" | "as" | "in" | "return" | "byte" | "field" | "bool" |
             "const" | "if" | "do" | "else" | "export" | "false" |
             "def" | "for" | "import" | "uint" |
             "in" | "public" | "private" | "return" |
