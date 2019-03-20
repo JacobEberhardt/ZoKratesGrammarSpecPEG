@@ -59,14 +59,50 @@ mod tests {
 
         #[test]
         fn parse_parameter_list() {
-            println!(
-                "{:#?}",
-                ZoKratesParser::parse(
-                    Rule::function_definition,
-                    "def foo(field a) -> (field, field): reutrn 1
-                "
-                )
-            );
+            parses_to!{
+                parser: ZoKratesParser,
+                input: "def foo(field a) -> (field, field): return 1
+                ",
+                rule: Rule::function_definition,
+                tokens: [
+                    function_definition(0, 45, [
+                        identifier(4, 7),
+                        // parameter_list is not created (silent rule)
+                        parameter(8, 15, [
+                            ty(8, 13, [
+                                ty_basic(8, 13, [
+                                    ty_field(8, 13)
+                                ])
+                            ]),
+                            identifier(14, 15)
+                        ]),
+                        // type_list is not created (silent rule)
+                        ty(21, 26, [
+                            ty_basic(21, 26, [
+                                ty_field(21, 26)
+                            ])
+                        ]),
+                        ty(28, 33, [
+                            ty_basic(28, 33, [
+                                ty_field(28, 33)
+                            ])
+                        ]),
+                        statement(36, 45, [
+                            return_statement(36, 44, [
+                                expression_list(43, 44, [
+                                    expression(43, 44, [
+                                        term(43, 44, [
+                                            primary_expression(43, 44, [
+                                                constant(43, 44)
+                                            ])
+                                        ])
+                                    ])
+                                ])
+                            ])
+                        ])
+                    ])
+                ]
+            };
         }
 
         #[test]
