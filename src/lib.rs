@@ -21,13 +21,12 @@ mod tests {
 
     mod examples {
         use super::*;
-        extern crate glob;
-        use glob::glob;
-        use std::fs;
-        use std::io::Read;
 
         #[test]
         fn examples_dir() {
+            use glob::glob;
+            use std::fs;
+            use std::io::Read;
             // Traverse all .code files in examples dir
             for entry in glob("examples/**/*.code").expect("Failed to read glob pattern") {
                 match entry {
@@ -54,6 +53,54 @@ mod tests {
                 rule: Rule::identifier,
                 tokens: [
                     identifier(0, 18)
+                ]
+            };
+        }
+
+        #[test]
+        fn parse_parameter_list() {
+            parses_to! {
+                parser: ZoKratesParser,
+                input: "def foo(field a) -> (field, field): return 1
+                ",
+                rule: Rule::function_definition,
+                tokens: [
+                    function_definition(0, 45, [
+                        identifier(4, 7),
+                        // parameter_list is not created (silent rule)
+                        parameter(8, 15, [
+                            ty(8, 13, [
+                                ty_basic(8, 13, [
+                                    ty_field(8, 13)
+                                ])
+                            ]),
+                            identifier(14, 15)
+                        ]),
+                        // type_list is not created (silent rule)
+                        ty(21, 26, [
+                            ty_basic(21, 26, [
+                                ty_field(21, 26)
+                            ])
+                        ]),
+                        ty(28, 33, [
+                            ty_basic(28, 33, [
+                                ty_field(28, 33)
+                            ])
+                        ]),
+                        statement(36, 45, [
+                            return_statement(36, 44, [
+                                expression_list(43, 44, [
+                                    expression(43, 44, [
+                                        term(43, 44, [
+                                            primary_expression(43, 44, [
+                                                constant(43, 44)
+                                            ])
+                                        ])
+                                    ])
+                                ])
+                            ])
+                        ])
+                    ])
                 ]
             };
         }

@@ -9,12 +9,25 @@
 // Doc: associativity and precedence table for operators
 
 file = { SOI ~ NEWLINE* ~ import_directive* ~ NEWLINE* ~ function_definition* ~ EOI }
-import_directive = {"import" ~ "\"" ~ (!"\"" ~ ANY)* ~ "\"" ~ ("as" ~ identifier)? ~ NEWLINE+}
-function_definition = {"def" ~ identifier ~ "(" ~ parameter_list? ~ ")" ~ "->" ~ "(" ~ (type_name ~ ("," ~ type_name)*)? ~ ")" ~ ":" ~ NEWLINE* ~ statement* }
+import_directive = {"import" ~ "\"" ~ import_source ~ "\"" ~ ("as" ~ identifier)? ~ NEWLINE+}
+import_source = @{(!"\"" ~ ANY)*}
+function_definition = {"def" ~ identifier ~ "(" ~ parameter_list ~ ")" ~ "->" ~ "(" ~ type_list ~ ")" ~ ":" ~ NEWLINE* ~ statement* }
 
-parameter_list = {parameter ~ ("," ~ parameter)*}
-parameter = {"private"? ~ type_name ~ identifier}
-type_name = @{"field" ~ ("[" ~ WHITESPACE* ~ expression ~ WHITESPACE* ~ "]")* | "bool" ~ ("[" ~ WHITESPACE* ~ "]")* }
+parameter_list = _{(parameter ~ ("," ~ parameter)*)?}
+parameter = {vis? ~ ty ~ identifier}
+
+// basic types
+ty_field = {"field"}
+ty_bool = {"bool"}
+ty_basic = { ty_field | ty_bool }
+// (unidimensional for now) arrays of (basic for now) types 
+ty_array = { ty_basic ~ ("[" ~ expression ~ "]") }
+ty = { ty_array | ty_basic }
+type_list = _{(ty ~ ("," ~ ty)*)?}
+
+vis_private = {"private"}
+vis_public = {"public"}
+vis = { vis_private | vis_public }
 
 // Statements 
 statement = { (return_statement // does not require subsequent newline
@@ -26,30 +39,34 @@ statement = { (return_statement // does not require subsequent newline
                 ) ~ NEWLINE 
             ) ~ NEWLINE* }
 
-iteration_statement = { "for" ~ type_name ~ identifier ~ "in" ~ constant ~ ".." ~ constant ~ "do" ~ NEWLINE* ~ statement* ~ "endfor"}
+iteration_statement = { "for" ~ ty ~ identifier ~ "in" ~ expression ~ ".." ~ expression ~ "do" ~ NEWLINE* ~ statement* ~ "endfor"}
 return_statement = { "return" ~ expression_list}
-multi_assignment_statement = { assignee_list ~ "=" ~ identifier ~ "(" ~ expression_list? ~ ")"} // This is very specific with regards to parsing. However, I think more generality is not needed here.
-definition_statement = {type_name ~ identifier ~ "=" ~ expression}
-assignment_statement = {identifier ~ ("[" ~ expression ~ "]")* ~ "=" ~ expression } // TODO: Is this optimal? Can the left side be written more elegantly?
+multi_assignment_statement = { optionally_typed_identifier_list ~ "=" ~ identifier ~ "(" ~ expression_list? ~ ")"} // This is very specific with regards to parsing. However, I think more generality is not needed here.
+definition_statement = {ty ~ identifier ~ "=" ~ expression} // declare and assign, so only identifiers are allowed, unlike `assignment_statement`
+assignment_statement = {assignee ~ "=" ~ expression } // TODO: Is this optimal? Can the left side be written more elegantly?
 expression_statement = {expression}
 
-assignee_list = { type_name? ~ identifier ~ ("," ~ type_name? ~ identifier)*} // declarations or assignments
+optionally_typed_identifier_list = _{ optionally_typed_identifier ~ ("," ~ optionally_typed_identifier)* } // declarations or assignments
+optionally_typed_identifier = { ty? ~ identifier }
 
 // Expressions
-expression_list = {expression ~ ("," ~ expression)*}
+expression_list = {(expression ~ ("," ~ expression)*)?}
 
 expression = { term ~ (op_binary ~ term)* }
 term = { ("(" ~ expression ~ ")") | conditional_expression | postfix_expression | primary_expression}
 
 conditional_expression = { "if" ~ expression ~ "then" ~ expression ~ "else" ~ expression ~ "fi"}
-postfix_expression = { primary_expression ~ ("[" ~ expression ~ "]" | "(" ~ expression_list? ~ ")")+ }
+
+postfix_expression = { identifier ~ access+ } // we force there to be at least one access, otherwise this matches single identifiers. Not sure that's what we want.
+access = {("[" ~ expression ~ "]" | "(" ~ expression_list? ~ ")")}
+
 primary_expression = { identifier
                     | constant
-                    | "(" ~ expression ~ ")"
                     | "[" ~ expression_list ~ "]" //special case for array initialization
                     }
 // End Expressions
 
+assignee = { identifier ~ ("[" ~ expression ~ "]")* }
 identifier = @{ ((!keyword ~ ASCII_ALPHA) | (keyword ~ (ASCII_ALPHANUMERIC | "_"))) ~ (ASCII_ALPHANUMERIC | "_")* }
 constant = @{ "0" | ASCII_NONZERO_DIGIT ~ ASCII_DIGIT* }
 
