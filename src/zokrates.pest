@@ -53,7 +53,7 @@ optionally_typed_identifier = { ty? ~ identifier }
 expression_list = _{(expression ~ ("," ~ expression)*)?}
 
 expression = { term ~ (op_binary ~ term)* }
-term = { ("(" ~ expression ~ ")") | conditional_expression | postfix_expression | primary_expression}
+term = { ("(" ~ expression ~ ")") | conditional_expression | postfix_expression | primary_expression | inline_array_expression }
 
 conditional_expression = { "if" ~ expression ~ "then" ~ expression ~ "else" ~ expression ~ "fi"}
 
@@ -64,8 +64,10 @@ call_access = { "(" ~ expression_list ~ ")" }
 
 primary_expression = { identifier
                     | constant
-                    | "[" ~ expression_list ~ "]" //special case for array initialization
                     }
+
+inline_array_expression = { "[" ~ expression_list ~ "]" }
+
 // End Expressions
 
 assignee = { identifier ~ ("[" ~ expression ~ "]")* }
