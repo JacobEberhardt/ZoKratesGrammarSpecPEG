@@ -89,12 +89,10 @@ mod tests {
                         ]),
                         statement(36, 45, [
                             return_statement(36, 44, [
-                                expression_list(43, 44, [
-                                    expression(43, 44, [
-                                        term(43, 44, [
-                                            primary_expression(43, 44, [
-                                                constant(43, 44)
-                                            ])
+                                expression(43, 44, [
+                                    term(43, 44, [
+                                        primary_expression(43, 44, [
+                                            constant(43, 44)
                                         ])
                                     ])
                                 ])

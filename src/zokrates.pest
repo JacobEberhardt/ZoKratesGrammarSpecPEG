@@ -32,7 +32,7 @@ vis = { vis_private | vis_public }
 // Statements 
 statement = { (return_statement // does not require subsequent newline
               | (iteration_statement
-                | multi_assignment_statement
+                | multi_assignment_statement // try this first as we want all assignments based on return of function calls match here and not later
                 | definition_statement
                 | assignment_statement
                 | expression_statement 
@@ -41,16 +41,16 @@ statement = { (return_statement // does not require subsequent newline
 
 iteration_statement = { "for" ~ ty ~ identifier ~ "in" ~ expression ~ ".." ~ expression ~ "do" ~ NEWLINE* ~ statement* ~ "endfor"}
 return_statement = { "return" ~ expression_list}
-multi_assignment_statement = { optionally_typed_identifier_list ~ "=" ~ identifier ~ "(" ~ expression_list? ~ ")"} // This is very specific with regards to parsing. However, I think more generality is not needed here.
+multi_assignment_statement = { optionally_typed_identifier_list ~ "=" ~ identifier ~ "(" ~ expression_list ~ ")"} // This is very specific with regards to parsing. However, I think more generality is not needed here.
 definition_statement = {ty ~ identifier ~ "=" ~ expression} // declare and assign, so only identifiers are allowed, unlike `assignment_statement`
 assignment_statement = {assignee ~ "=" ~ expression } // TODO: Is this optimal? Can the left side be written more elegantly?
 expression_statement = {expression}
 
-optionally_typed_identifier_list = _{ optionally_typed_identifier ~ ("," ~ optionally_typed_identifier)* } // declarations or assignments
+optionally_typed_identifier_list = _{ optionally_typed_identifier ~ ("," ~ optionally_typed_identifier)* }
 optionally_typed_identifier = { ty? ~ identifier }
 
 // Expressions
-expression_list = {(expression ~ ("," ~ expression)*)?}
+expression_list = _{(expression ~ ("," ~ expression)*)?}
 
 expression = { term ~ (op_binary ~ term)* }
 term = { ("(" ~ expression ~ ")") | conditional_expression | postfix_expression | primary_expression}
@@ -58,7 +58,9 @@ term = { ("(" ~ expression ~ ")") | conditional_expression | postfix_expression 
 conditional_expression = { "if" ~ expression ~ "then" ~ expression ~ "else" ~ expression ~ "fi"}
 
 postfix_expression = { identifier ~ access+ } // we force there to be at least one access, otherwise this matches single identifiers. Not sure that's what we want.
-access = {("[" ~ expression ~ "]" | "(" ~ expression_list? ~ ")")}
+access = { array_access | call_access }
+array_access = { "[" ~ expression ~ "]" }
+call_access = { "(" ~ expression_list ~ ")" }
 
 primary_expression = { identifier
                     | constant
