@@ -67,7 +67,7 @@ primary_expression = { identifier
                     }
 
 inline_array_expression = { "[" ~ expression_list ~ "]" }
-unary_expression = { op_unary+ ~ term }
+unary_expression = { op_unary ~ term }
 
 // End Expressions
 
@@ -91,7 +91,7 @@ op_div = {"/"}
 op_pow = {"**"}
 op_not = {"!"}
 op_binary = _ { op_pow | op_inclusive_or | op_exclusive_or | op_and | op_equal | op_not_equal | op_lte | op_lt | op_gte | op_gt | op_add | op_sub | op_mul | op_div }
-op_unary = _ { op_not }
+op_unary = { op_not }
 
 
 WHITESPACE = _{ " " | "\t" | "\\" ~ NEWLINE}
