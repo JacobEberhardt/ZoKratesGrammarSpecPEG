@@ -3,7 +3,7 @@
 
 Formal grammar specification of the ZoKrates DSL in PEG (Pest).
 
-This is expiremental.
+This is experimental.
 
 ## Example folder
 
