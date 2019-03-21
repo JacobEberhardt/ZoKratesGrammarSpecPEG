@@ -53,7 +53,7 @@ optionally_typed_identifier = { ty? ~ identifier }
 expression_list = _{(expression ~ ("," ~ expression)*)?}
 
 expression = { term ~ (op_binary ~ term)* }
-term = { ("(" ~ expression ~ ")") | conditional_expression | postfix_expression | primary_expression | inline_array_expression }
+term = { ("(" ~ expression ~ ")") | conditional_expression | postfix_expression | primary_expression | inline_array_expression | unary_expression }
 
 conditional_expression = { "if" ~ expression ~ "then" ~ expression ~ "else" ~ expression ~ "fi"}
 
@@ -67,6 +67,7 @@ primary_expression = { identifier
                     }
 
 inline_array_expression = { "[" ~ expression_list ~ "]" }
+unary_expression = { op_unary+ ~ term }
 
 // End Expressions
 
@@ -74,9 +75,9 @@ assignee = { identifier ~ ("[" ~ expression ~ "]")* }
 identifier = @{ ((!keyword ~ ASCII_ALPHA) | (keyword ~ (ASCII_ALPHANUMERIC | "_"))) ~ (ASCII_ALPHANUMERIC | "_")* }
 constant = @{ "0" | ASCII_NONZERO_DIGIT ~ ASCII_DIGIT* }
 
-op_inclusive_or = {"|"}
+op_inclusive_or = {"||"}
 op_exclusive_or = {"^"}
-op_and = {"&"}
+op_and = {"&&"}
 op_equal = {"=="}
 op_not_equal = {"!="}
 op_lt = {"<"}
@@ -88,14 +89,16 @@ op_sub = {"-"}
 op_mul = {"*"}
 op_div = {"/"}
 op_pow = {"**"}
-op_binary = _ { op_pow | op_inclusive_or | op_exclusive_or | op_and | op_equal | op_not_equal | op_lt | op_lte | op_gt | op_gte | op_add | op_sub | op_mul | op_div }
+op_not = {"!"}
+op_binary = _ { op_pow | op_inclusive_or | op_exclusive_or | op_and | op_equal | op_not_equal | op_lte | op_lt | op_gte | op_gt | op_add | op_sub | op_mul | op_div }
+op_unary = _ { op_not }
+
 
 WHITESPACE = _{ " " | "\t" | "\\" ~ NEWLINE}
 COMMENT = _{ ("/*" ~ (!"*/" ~ ANY)* ~ "*/") | ("//" ~ (!NEWLINE ~ ANY)*) }
 
 // TODO: Order by alphabet
-keyword = @{"for" | "endfor" | "as" | "in" | "return" | "byte" | "field" | "bool" |
-            "const" | "if" | "do" | "else" | "export" | "false" |
+keyword = @{"for" | "endfor" | "as" | "in" | "return" | "byte" | "field" | "bool" | "if" | "do" | "else" | "export" | "false" |
             "def" | "for" | "import" | "uint" |
             "in" | "public" | "private" | "return" |
             "struct" | "true"

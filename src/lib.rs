@@ -33,11 +33,13 @@ mod tests {
                     Ok(path) => {
                         println!("Parsing {:?}", path.display());
                         let mut file = fs::File::open(path).unwrap();
+
                         let mut data = String::new();
                         file.read_to_string(&mut data).unwrap();
-                        ZoKratesParser::parse(Rule::file, &data).unwrap();
+
+                        assert!(ZoKratesParser::parse(Rule::file, &data).is_ok());
                     }
-                    Err(e) => println!("{:?}", e),
+                    Err(e) => panic!("{:?}", e),
                 }
             }
         }
@@ -134,6 +136,5 @@ mod tests {
             let parse = ZoKratesParser::parse(Rule::iteration_statement, input);
             assert!(parse.is_ok());
         }
-
     }
 }
